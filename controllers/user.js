@@ -1,42 +1,70 @@
 const { response, request } = require('express');
 
-const getUser = ( req = request, res = response ) => {
 
-    const { nombre, tst } = req.query;
+const User = require('../models/user');
+const bcrypt = require('bcryptjs');
+
+const getUser = async( req = request, res = response ) => {
+    const { limit = 5, from = 0 } = req.query;
+    const query = { estado: true };
+
+    const [ total, users ] = await Promise.all([
+        User.countDocuments( query ),
+        User.find( query )
+            .skip( Number( from ))
+            .limit( Number( limit ))
+    ]);
 
     res.json({
-        ok: true,
-        msg: 'get API - controller ',
-        nombre,
-        tst,
+        total,
+        users,
     });
 };
 
-const postUser = ( req = request, res = response ) => {
-    const { nombre, edad } = req.body;
+const postUser = async( req = request, res = response ) => {
 
-    res.status(201).json({
-        msg: 'post API - controller',
-        nombre,
-        edad,
-    });
+    const { nombre, correo, password, role } = req.body;
+    const user = new User( { nombre, correo, password, role } );
+    
+    // Encrypt password
+    const salt = bcrypt.genSaltSync();
+    user.password = bcrypt.hashSync( password, salt );
+
+    // Save in database
+    await user.save();
+
+    // Resolve
+    res.status(200).json(user);
 };
 
-const putUser = ( req= request, res = response ) => {
+const putUser = async( req= request, res = response ) => {
     const { id } = req.params;
+    const { _id ,password, google, ...rest } = req.body;
+
+    // TODO: validate from db
+    if ( password ) {
+        const salt = bcrypt.genSaltSync();
+        rest.password = bcrypt.hashSync( password, salt );
+    };
+
+    const userDB = await User.findByIdAndUpdate( id, rest ); 
 
     res.status(200).json({
         ok: true,
-        msg: 'put API - controller',
-        id,
+        userDB,
     });
 };
 
 const deleteUser = ( req = request, res = response ) => {
-    res.json({
-        ok: true,
-        msg: 'delete API - controller',
-    });
+
+    const { id } = req.params;
+
+    // Fisic delete
+    // const user = User.findByIdAndDelete( id );
+
+    const user = User.findByIdAndUpdate(id, { estado: false });
+
+    res.json( user );
 };
 
 module.exports = {
