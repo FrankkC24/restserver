@@ -55,16 +55,13 @@ const putUser = async( req= request, res = response ) => {
     });
 };
 
-const deleteUser = ( req = request, res = response ) => {
+const deleteUser = async( req = request, res = response ) => {
 
     const { id } = req.params;
 
-    // Fisic delete
-    // const user = User.findByIdAndDelete( id );
+    const user = await User.findByIdAndUpdate(id, { estado: false });
 
-    const user = User.findByIdAndUpdate(id, { estado: false });
-
-    res.json( user );
+    res.status(200).json( user );
 };
 
 module.exports = {
