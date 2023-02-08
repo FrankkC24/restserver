@@ -40,4 +40,4 @@ SchemaUser.methods.toJSON = function() {
 };
 
 
-module.exports = model('Usuario', SchemaUser);
+module.exports = model('Usuarios', SchemaUser);

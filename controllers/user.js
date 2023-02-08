@@ -39,7 +39,7 @@ const postUser = async( req = request, res = response ) => {
 
 const putUser = async( req= request, res = response ) => {
     const { id } = req.params;
-    const { _id ,password, google, ...rest } = req.body;
+    const { _id , password, google, ...rest } = req.body;
 
     // TODO: validate from db
     if ( password ) {
